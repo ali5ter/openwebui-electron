@@ -46,7 +46,7 @@ brew install --cask openwebui
 Or in one step:
 
 ```bash
-brew install ali5ter/tap/openwebui
+brew install ali5ter/tap/openwebui-electron
 ```
 
 ## Configuration

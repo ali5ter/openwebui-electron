@@ -5,3 +5,5 @@ src/dist/
 *.deb
 *.tar.gz
 .env
+AGENTS.md
+AGENTS.md.backup.*

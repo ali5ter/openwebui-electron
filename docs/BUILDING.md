@@ -44,8 +44,7 @@ build.
    Spotlight may still launch a stale copy:
 
    ```bash
-   sqlite3 ~/Library/com.apple.LaunchServices/com.apple.launchservices.secure \
-     "DELETE FROM LSApplications WHERE LSApplicationPackagePath = '/Applications/OpenWebUI.app';"
+   sqlite3 ~/Library/com.apple.LaunchServices/com.apple.launchservices.secure "DELETE FROM LSApplications WHERE LSApplicationPackagePath = '/Applications/OpenWebUI.app';"
    killall Finder
    ```
 

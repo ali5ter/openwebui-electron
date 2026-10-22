@@ -35,17 +35,38 @@ function createWindow() {
     },
   });
 
+  let failed = false;
+
   win.webContents.on('did-fail-load', (_event, _code, desc) => {
-    win.loadURL(`data:text/html,
-      <html style="margin:0; padding:40px; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:16px; line-height:1.6; color:#1a1a1a;">
-        <h2>Could not connect to OpenWebUI</h2>
-        <p>OpenWebUI Electron tried to load <code>${OPENWEBUI_URL}</code> but the connection failed.</p>
-        <p>Make sure OpenWebUI is running, then check <code>~/.config/openwebui-electron/env</code> for the correct URL.</p>
-      </html>
-    `);
+    if (failed) return;
+    failed = true;
+    showOffline();
+  });
+
+  // If no page content arrives within 5 seconds, show an error page.
+  // This catches connection timeouts where did-fail-load doesn't fire.
+  const timeout = setTimeout(() => {
+    if (failed) return;
+    failed = true;
+    showOffline();
+  }, 5000);
+
+  win.webContents.on('did-finish-load', () => {
+    clearTimeout(timeout);
   });
 
   win.loadURL(OPENWEBUI_URL);
+
+  function showOffline() {
+    win.loadURL(
+      `data:text/html,` +
+        `<html style="margin:0;padding:40px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;">` +
+        `<h2>Could not connect to OpenWebUI</h2>` +
+        `<p>OpenWebUI Electron tried to load <code>${OPENWEBUI_URL}</code> but the connection failed.</p>` +
+        `<p>Make sure OpenWebUI is running, then check <code>~/.config/openwebui-electron/env</code> for the correct URL.</p>` +
+        `</html>`,
+    );
+  }
 }
 
 app.on('ready', createWindow);

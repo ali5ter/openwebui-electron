@@ -41,10 +41,10 @@ build.
 
 4. If the issue persists, clear the LaunchServices cache. macOS caches the "last
    known good" binary for an app — if you've reinstalled from a newer dmg,
-   Spotlight may still launch a stale copy:
+   Spotlight may still launch a stale copy. Delete the plist and restart Finder:
 
    ```bash
-   sqlite3 ~/Library/com.apple.LaunchServices/com.apple.launchservices.secure "DELETE FROM LSApplications WHERE LSApplicationPackagePath = '/Applications/OpenWebUI.app';"
+   rm ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist
    killall Finder
    ```
 

@@ -38,32 +38,7 @@ function createWindow() {
     },
   });
 
-  let failed = false;
-
-  win.webContents.on('did-fail-load', (_event, _code, desc) => {
-    if (failed) return;
-    failed = true;
-    console.log('did-fail-load:', desc);
-    showOffline();
-  });
-
-  win.webContents.on('did-finish-load', () => {
-    console.log('did-finish-load — page loaded successfully');
-  });
-
-  // If no page content arrives within 5 seconds, show an error page.
-  // This catches connection timeouts where did-fail-load doesn't fire.
-  const timeout = setTimeout(() => {
-    if (failed) return;
-    failed = true;
-    console.log('timeout fired — showing offline page');
-    showOffline();
-  }, 5000);
-
-  win.webContents.on('did-finish-load', () => {
-    clearTimeout(timeout);
-  });
-
+  win.setTitle(`OpenWebUI → ${OPENWEBUI_URL}`);
   win.loadURL(OPENWEBUI_URL);
 
   function showOffline() {

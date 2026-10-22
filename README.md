@@ -31,6 +31,11 @@ cd openwebui-electron
 ./scripts/build.sh --linux
 ```
 
+### Need help setting up?
+
+See [docs/setup.md](docs/setup.md) for a step-by-step guide to installing Ollama, OpenWebUI, and
+the desktop app.
+
 ### From Homebrew
 
 ```bash

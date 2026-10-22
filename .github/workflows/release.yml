@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: src
+        run: npm install
+
+      - name: Build DMG and zip
+        working-directory: src
+        run: npx electron-builder --mac --arm64
+
+      - name: Upload DMG
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src/dist/OpenWebUI-*.dmg
+          generate_release_notes: true
+
+      - name: Upload zip
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src/dist/OpenWebUI-*-mac.zip
+          generate_release_notes: true

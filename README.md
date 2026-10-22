@@ -33,31 +33,55 @@ cd openwebui-electron
 
 ## Configuration
 
-The app loads OpenWebUI from `http://localhost:8080` by default. Override with:
+### App config
+
+The app loads OpenWebUI from `http://localhost:8080` by default. Override the URL by creating
+`~/.config/openwebui-electron/env`:
 
 ```bash
-OPENWEBUI_URL=http://192.168.1.63:8080 /Applications/OpenWebUI.app/Contents/MacOS/OpenWebUI
+mkdir -p ~/.config/openwebui-electron
+cat > ~/.config/openwebui-electron/env << 'EOF'
+# URL where OpenWebUI is running
+OPENWEBUI_URL=http://192.168.1.63:8080
+EOF
 ```
+
+Copy the template from [docs/env.template](docs/env.template) for the full reference.
 
 ### OpenWebUI settings you must configure
 
-The Electron app is a blank window — all real configuration happens in OpenWebUI itself.
+OpenWebUI does its own configuration — the Electron app is just a window. All settings live in
+OpenWebUI's own `.env` file (usually `~/.openwebui/.env`) or in the web UI **Settings** panel.
 
-1. **Ollama connection** — OpenWebUI must know where your Ollama server is. Set this in
-   OpenWebUI's `.env` file before starting the service:
+1. **Ollama connection** (`OLLAMA_BASE_URL` in OpenWebUI's `.env`)
+
+   Tells OpenWebUI where to find your Ollama server. Default is `http://localhost:11434`. If
+   Ollama is on a different machine, use that host's LAN IP:
 
    ```env
-   OLLAMA_BASE_URL=http://localhost:11434
+   OLLAMA_BASE_URL=http://192.168.1.63:11434
    ```
 
-   If Ollama is on a different host, use that host's IP.
+2. **Embedding model** (OpenWebUI **Settings → RAG** panel)
 
-2. **Embedding model** — by default OpenWebUI tries to download `nomic-embed-text` from
-   HuggingFace. To keep everything local, set the embedding model in OpenWebUI **Settings → RAG**
-   to a model available on your local Ollama instance.
+   By default OpenWebUI tries to download `nomic-embed-text` from HuggingFace. To keep everything
+   local, set the embedding model to a model available on your local Ollama instance:
 
-3. **Authentication** — OpenWebUI has no built-in sign-in by default. To require a password, set
-   `OPENWEBUI_SECRET_KEY` in your OpenWebUI `.env` file.
+   ```bash
+   ollama pull nomic-embed-text
+   ```
+
+   Then in OpenWebUI **Settings → RAG**, set the embedding model to `nomic-embed-text`.
+
+3. **Authentication** (`OPENWEBUI_SECRET_KEY` in OpenWebUI's `.env`)
+
+   OpenWebUI has no built-in sign-in by default. To require a password for all users, set a key:
+
+   ```env
+   OPENWEBUI_SECRET_KEY=your-secret-key
+   ```
+
+   Without this, anyone on your LAN can access OpenWebUI.
 
 ## macOS Gatekeeper note
 
@@ -67,6 +91,14 @@ This app is unsigned. On first launch macOS may show:
 
 Workaround: right-click `/Applications/OpenWebUI.app` → **Open** → click **Open** in the dialog.
 This only happens once per app install.
+
+## iOS / iPhone
+
+OpenWebUI works as a PWA on iOS — no app needed. Open `http://192.168.1.63:8080` in Safari on
+your iPhone, tap the **Share** button → **Add to Home Screen**. It launches in its own window with
+its own icon, just like a native app.
+
+Note: the URL must be `http://` on your LAN. HTTPS is not required for the PWA to work on iOS.
 
 ## License
 

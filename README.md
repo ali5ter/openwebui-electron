@@ -42,7 +42,7 @@ the desktop app.
 
 ```bash
 brew tap ali5ter/tap
-brew install --cask openwebui
+brew install --cask openwebui-electron
 ```
 
 Or in one step:

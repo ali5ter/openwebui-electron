@@ -31,6 +31,19 @@ cd openwebui-electron
 ./scripts/build.sh --linux
 ```
 
+### From Homebrew
+
+```bash
+brew tap ali5ter/tap
+brew install --cask openwebui
+```
+
+Or in one step:
+
+```bash
+brew install ali5ter/tap/openwebui
+```
+
 ## Configuration
 
 ### App config

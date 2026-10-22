@@ -87,10 +87,16 @@ OpenWebUI's own `.env` file (usually `~/.openwebui/.env`) or in the web UI **Set
 
 This app is unsigned. On first launch macOS may show:
 
-> "OpenWebUI is damaged and can't be opened."
+> "OpenWebUI.app" is damaged and can't be opened. You should move it to the Trash.
 
-Workaround: right-click `/Applications/OpenWebUI.app` → **Open** → click **Open** in the dialog.
-This only happens once per app install.
+This is because macOS adds a quarantine flag to downloaded apps. Fix it with one command:
+
+```bash
+xattr -d com.apple.quarantine /Applications/OpenWebUI.app
+```
+
+Or use the GUI: right-click `/Applications/OpenWebUI.app` → **Open** → click **Open** in the
+dialog. This only happens once per app install.
 
 ## iOS / iPhone
 

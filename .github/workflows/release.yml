@@ -38,3 +38,43 @@ jobs:
         with:
           files: src/dist/OpenWebUI-*-mac.zip
           generate_release_notes: true
+
+      - name: Publish to Homebrew tap
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          SHA256=$(shasum -a 256 "src/dist/OpenWebUI-${VERSION}-arm64.dmg" | awk '{print $1}')
+
+          git clone git@github.com:ali5ter/homebrew-tap.git /tmp/homebrew-tap
+          mkdir -p /tmp/homebrew-tap/Casks
+
+          cat > "/tmp/homebrew-tap/Casks/openwebui.rb" <<EOF
+          cask "openwebui" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/ali5ter/openwebui-electron/releases/download/v\${version}/OpenWebUI-\${version}-arm64.dmg"
+            name "OpenWebUI"
+            desc "Desktop app for local OpenWebUI instances"
+            homepage "https://github.com/ali5ter/openwebui-electron"
+
+            app "OpenWebUI.app"
+
+            uninstall quit: "com.openwebui.desktop"
+
+            caveats <<~EOS
+              This app is unsigned. On first launch, macOS may show a warning.
+
+              Right-click /Applications/OpenWebUI.app → Open → click Open in the dialog.
+              Or run: xattr -d com.apple.quarantine /Applications/OpenWebUI.app
+            EOS
+          end
+          EOF
+
+          cd /tmp/homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/openwebui.rb
+          git commit -m "chore: update openwebui cask to ${VERSION}" || echo "No changes to commit"
+          git push origin main

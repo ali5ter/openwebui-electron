@@ -1,6 +1,6 @@
 {
   "name": "openwebui-electron",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Desktop wrapper for OpenWebUI — local Ollama models via a native app",
   "main": "main.js",
   "author": "Alister Lewis-Bowen <alister@lewis-bowen.org>",

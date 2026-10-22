@@ -24,8 +24,6 @@ function loadEnvFile() {
 
 const config = loadEnvFile();
 const OPENWEBUI_URL = process.env.OPENWEBUI_URL || config.OPENWEBUI_URL || 'http://localhost:8080';
-const configDir = path.join(require('os').homedir(), '.config', 'openwebui-electron');
-const configPath = path.join(configDir, 'env');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -37,39 +35,32 @@ function createWindow() {
     },
   });
 
-  win.setTitle(`OpenWebUI → ${OPENWEBUI_URL}`);
-  win.loadURL(OPENWEBUI_URL);
+  let failed = false;
 
-  // Inject a debug bar so the user can always see what URL the app is trying.
-  win.webContents.on('did-finish-load', () => {
-    win.webContents.insertCSS(`
-      body::before {
-        content: 'OPENWEBUI_URL: ${OPENWEBUI_URL} | Config path: ${configPath} | Config exists: ${require('fs').existsSync(configPath)}';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: #ff4444;
-        color: white;
-        font-family: monospace;
-        font-size: 13px;
-        padding: 6px 10px;
-        z-index: 999999;
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    `);
+  win.webContents.on('did-fail-load', () => {
+    if (failed) return;
+    failed = true;
+    showOffline();
   });
+
+  // If no page content arrives within 5 seconds, show an error page.
+  // This catches connection timeouts where did-fail-load doesn't fire.
+  const timeout = setTimeout(() => {
+    if (failed) return;
+    failed = true;
+    showOffline();
+  }, 5000);
+
+  win.webContents.on('did-finish-load', () => {
+    clearTimeout(timeout);
+  });
+
+  win.loadURL(OPENWEBUI_URL);
 
   function showOffline() {
     win.loadURL(
       `data:text/html,` +
         `<html style="margin:0;padding:40px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;">` +
-        `<div style="background:#ff4444;color:white;padding:6px 10px;font-family:monospace;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">` +
-        `OPENWEBUI_URL: ${OPENWEBUI_URL} | Config path: ${configPath} | Config exists: ${require('fs').existsSync(configPath)}` +
-        `</div>` +
         `<h2>Could not connect to OpenWebUI</h2>` +
         `<p>OpenWebUI Electron tried to load <code>${OPENWEBUI_URL}</code> but the connection failed.</p>` +
         `<p>Make sure OpenWebUI is running, then check <code>~/.config/openwebui-electron/env</code> for the correct URL.</p>` +

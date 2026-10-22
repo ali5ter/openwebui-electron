@@ -31,6 +31,8 @@ cd openwebui-electron
 ./scripts/build.sh --linux
 ```
 
+See [docs/BUILDING.md](docs/BUILDING.md) for full build and install instructions.
+
 ### Need help setting up?
 
 See [docs/setup.md](docs/setup.md) for a step-by-step guide to installing Ollama, OpenWebUI, and

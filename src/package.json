@@ -1,0 +1,25 @@
+{
+  "name": "openwebui-electron",
+  "version": "0.1.0",
+  "description": "Desktop wrapper for OpenWebUI — local Ollama models via a native app",
+  "main": "main.js",
+  "author": "Alister Lewis-Bowen <alister@lewis-bowen.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.openwebui.desktop",
+    "productName": "OpenWebUI",
+    "icon": "../resources/logo",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": ["dmg", "zip"]
+    },
+    "linux": {
+      "category": "Utility",
+      "target": ["AppImage", "deb"]
+    }
+  }
+}

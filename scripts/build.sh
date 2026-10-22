@@ -51,6 +51,14 @@ case "${1:-}" in
     ;;
 esac
 
+# Inject ATS key for WKWebView (allows HTTP to non-localhost IPs)
+if [[ "$(uname)" == "Darwin" ]]; then
+  APP_PATH="${SRC_DIR}/dist/mac-arm64/OpenWebUI.app"
+  if [[ -d "${APP_PATH}" ]]; then
+    plutil -replace NSAllowsArbitraryLoadsInWebContent -bool true "${APP_PATH}/Contents/Info.plist"
+  fi
+fi
+
 echo ""
 echo "Build complete. Output in ${SRC_DIR}/dist/"
 ls -lh "${SRC_DIR}/dist/"

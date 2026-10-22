@@ -25,6 +25,9 @@ function loadEnvFile() {
 const config = loadEnvFile();
 const OPENWEBUI_URL = process.env.OPENWEBUI_URL || config.OPENWEBUI_URL || 'http://localhost:8080';
 
+console.log('OPENWEBUI_URL:', OPENWEBUI_URL);
+console.log('Config file exists:', require('fs').existsSync(path.join(require('os').homedir(), '.config', 'openwebui-electron', 'env')));
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
@@ -40,7 +43,12 @@ function createWindow() {
   win.webContents.on('did-fail-load', (_event, _code, desc) => {
     if (failed) return;
     failed = true;
+    console.log('did-fail-load:', desc);
     showOffline();
+  });
+
+  win.webContents.on('did-finish-load', () => {
+    console.log('did-finish-load — page loaded successfully');
   });
 
   // If no page content arrives within 5 seconds, show an error page.
@@ -48,6 +56,7 @@ function createWindow() {
   const timeout = setTimeout(() => {
     if (failed) return;
     failed = true;
+    console.log('timeout fired — showing offline page');
     showOffline();
   }, 5000);
 

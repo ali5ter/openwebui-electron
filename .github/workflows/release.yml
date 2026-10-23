@@ -44,17 +44,23 @@ jobs:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          SHA256=$(shasum -a 256 "src/dist/OpenWebUI-${VERSION}-arm64.dmg" | awk '{print $1}')
+          DMG="src/dist/OpenWebUI-${VERSION}-arm64.dmg"
+          if [[ ! -f "${DMG}" ]]; then
+            echo "error: ${DMG} not found. The tag v${VERSION} must match the version in src/package.json." >&2
+            ls src/dist/ >&2
+            exit 1
+          fi
+          SHA256=$(shasum -a 256 "${DMG}" | awk '{print $1}')
 
-          git clone git@github.com:ali5ter/homebrew-tap.git /tmp/homebrew-tap
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/ali5ter/homebrew-tap.git" /tmp/homebrew-tap
           mkdir -p /tmp/homebrew-tap/Casks
 
-          cat > "/tmp/homebrew-tap/Casks/openwebui.rb" <<EOF
-          cask "openwebui" do
+          cat > "/tmp/homebrew-tap/Casks/openwebui-electron.rb" <<EOF
+          cask "openwebui-electron" do
             version "${VERSION}"
             sha256 "${SHA256}"
 
-            url "https://github.com/ali5ter/openwebui-electron/releases/download/v\${version}/OpenWebUI-\${version}-arm64.dmg"
+            url "https://github.com/ali5ter/openwebui-electron/releases/download/v#{version}/OpenWebUI-#{version}-arm64.dmg"
             name "OpenWebUI"
             desc "Desktop app for local OpenWebUI instances"
             homepage "https://github.com/ali5ter/openwebui-electron"
@@ -64,10 +70,14 @@ jobs:
             uninstall quit: "com.openwebui.desktop"
 
             caveats <<~EOS
-              This app is unsigned. On first launch, macOS may show a warning.
+              This app is ad-hoc signed, not notarized. On first launch, macOS may show a warning.
 
-              Right-click /Applications/OpenWebUI.app → Open → click Open in the dialog.
+              In Finder, open the Applications folder, right-click OpenWebUI.app, choose
+              **Open**, then click **Open** in the dialog.
               Or run: xattr -d com.apple.quarantine /Applications/OpenWebUI.app
+
+              If OpenWebUI runs on another machine, allow the app under
+              System Settings > Privacy & Security > Local Network when macOS asks.
             EOS
           end
           EOF
@@ -75,6 +85,6 @@ jobs:
           cd /tmp/homebrew-tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/openwebui.rb
-          git commit -m "chore: update openwebui cask to ${VERSION}" || echo "No changes to commit"
+          git add Casks/openwebui-electron.rb
+          git commit -m "chore: update openwebui-electron cask to v${VERSION}" || echo "No changes to commit"
           git push origin main

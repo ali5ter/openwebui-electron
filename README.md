@@ -70,7 +70,7 @@ Copy the template from [docs/env.template](docs/env.template) for the full refer
 
 ## macOS Gatekeeper note
 
-This app is unsigned. On first launch macOS may show:
+This app is ad-hoc signed, not signed with an Apple Developer ID. On first launch macOS may show:
 
 > "OpenWebUI.app" is damaged and can't be opened. You should move it to the Trash.
 
@@ -82,6 +82,14 @@ xattr -d com.apple.quarantine /Applications/OpenWebUI.app
 
 Or use the GUI: right-click `/Applications/OpenWebUI.app` → **Open** → click **Open** in the
 dialog. This only happens once per app install.
+
+## macOS Local Network note
+
+If OpenWebUI runs on another machine, macOS asks for local network access the first time the
+app connects. Allow it, or turn it on later under **System Settings → Privacy & Security →
+Local Network**. Without it the window stays blank or shows "Could not connect" when launched
+from Spotlight, Finder or the Dock. Launching from a terminal bypasses this check, which can
+make the problem look intermittent.
 
 ## iOS / iPhone
 

@@ -1,7 +1,7 @@
 {
   "name": "openwebui-electron",
-  "version": "0.1.5",
-  "description": "Desktop wrapper for OpenWebUI — local Ollama models via a native app",
+  "version": "0.1.6",
+  "description": "Desktop wrapper for OpenWebUI \u2014 local Ollama models via a native app",
   "main": "main.js",
   "author": "Alister Lewis-Bowen <alister@lewis-bowen.org>",
   "license": "MIT",
@@ -15,11 +15,25 @@
     "icon": "../resources/logo",
     "mac": {
       "category": "public.app-category.utilities",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "extendInfo": {
+        "NSLocalNetworkUsageDescription": "OpenWebUI needs local network access to reach an OpenWebUI server on another machine on your network.",
+        "NSAllowsArbitraryLoadsInWebContent": true
+      }
     },
     "linux": {
       "category": "Utility",
-      "target": ["AppImage", "deb"]
-    }
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "files": [
+      "main.js"
+    ],
+    "afterPack": "after-pack.mjs"
   }
 }

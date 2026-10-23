@@ -114,3 +114,11 @@ Check the logs:
 ```bash
 tail -f ~/Library/Logs/OpenWebUI/*.log
 ```
+
+### Blank window when OpenWebUI runs on another machine
+
+If `OPENWEBUI_URL` points at a LAN address and the app works from a terminal but not from
+Spotlight, macOS Local Network privacy is blocking it. Allow the app under
+**System Settings → Privacy & Security → Local Network**. If the toggle has no effect, the
+build predates the signing fix: see
+[Code signing](BUILDING.md#code-signing) in the build guide.

@@ -17,43 +17,69 @@ Output goes to `src/dist/`.
 ./scripts/install.sh /path      # From a specific dist directory
 ```
 
-## If the app shows a blank white screen
+## Code signing
 
-This can happen on machines that have an older version installed. macOS Spotlight
-caches the last known good binary, so launching from Spotlight may use a stale
-build.
+There is no Apple Developer ID, so electron-builder cannot sign the app. Left alone, the
+packaged bundle keeps Electron's stock signature, whose identifier is `Electron` rather than
+`com.openwebui.desktop` and which no longer matches the modified bundle. macOS Local Network
+privacy (macOS 15 and later) keys its allow/deny decision on that identifier, so an app in
+this state can never be granted local network access, however the toggle in System Settings
+is set.
 
-1. Close the app completely (**Cmd+Q**).
-2. Launch from the terminal instead:
+`src/after-pack.mjs` therefore ad-hoc signs the whole bundle after packing, giving every
+executable a signature whose identifier is its own bundle ID. Verify a build with:
+
+```bash
+codesign -dv src/dist/mac-arm64/OpenWebUI.app 2>&1 | grep Identifier
+codesign --verify --deep --strict src/dist/mac-arm64/OpenWebUI.app
+```
+
+The first command must print `Identifier=com.openwebui.desktop`. Never modify the `.app`
+after the build (for example with `plutil`); that breaks the signature. Info.plist additions
+belong in `extendInfo` in `src/package.json`.
+
+Ad-hoc signing does not satisfy Gatekeeper, so the right-click → Open workaround on first
+launch still applies.
+
+## If the app shows a blank window or "Could not connect"
+
+When OpenWebUI runs on another machine (a LAN address such as `http://192.168.1.63:8080`)
+and the window is blank or shows the "Could not connect" page, but the same app works
+when started from a terminal:
+
+```bash
+/Applications/OpenWebUI.app/Contents/MacOS/OpenWebUI
+```
+
+then macOS Local Network privacy is blocking the app. Processes started from a terminal
+inherit the terminal's local network access, which is why that launch works. Spotlight,
+Finder and the Dock launch the app as its own responsible process, and its own permission
+applies.
+
+1. Check that the installed app is signed with its own identifier:
 
    ```bash
-   /Applications/OpenWebUI.app/Contents/MacOS/OpenWebUI
+   codesign -dv /Applications/OpenWebUI.app 2>&1 | grep Identifier
    ```
 
-   If this works, the app is fine — Spotlight is serving a cached version.
-
-3. To fix Spotlight, clear its index cache for the Applications folder:
-
-   ```bash
-   sudo mdutil -i off /Applications
-   sudo mdutil -i on /Applications
-   ```
-
-4. If the issue persists, clear the LaunchServices cache. macOS caches the "last
-   known good" binary for an app — if you've reinstalled from a newer dmg,
-   Spotlight may still launch a stale copy. Delete the plist and restart Finder:
+   If this prints `Identifier=Electron`, the build predates the signing fix. Rebuild and
+   reinstall:
 
    ```bash
-   rm ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist
-   killall Finder
-   ```
-
-5. Or rebuild the app on the machine where it will run:
-
-   ```bash
-   cd ~/Documents/Projects/openwebui-electron
-   rm -rf src/dist
    ./scripts/build.sh --mac
-   rm -rf /Applications/OpenWebUI.app
    ./scripts/install.sh
    ```
+
+2. Launch the app from Spotlight and allow it when macOS asks for local network access, or
+   turn it on under **System Settings → Privacy & Security → Local Network**.
+
+3. To confirm what macOS is doing, watch for dropped connections while launching:
+
+   ```bash
+   log stream --predicate 'eventMessage CONTAINS "tcp drop" AND eventMessage CONTAINS "OpenWebUI"'
+   ```
+
+   A line ending in `reason: NECP` means the Local Network policy blocked the connection.
+
+This only affects LAN addresses. `localhost` is never subject to Local Network privacy,
+which is why a machine running OpenWebUI locally never shows the problem.

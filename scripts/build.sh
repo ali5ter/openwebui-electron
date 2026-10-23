@@ -51,11 +51,14 @@ case "${1:-}" in
     ;;
 esac
 
-# Inject ATS key for WKWebView (allows HTTP to non-localhost IPs)
+# Info.plist additions (ATS, Local Network usage description) are applied by
+# electron-builder via "extendInfo" in src/package.json, and the bundle is
+# ad-hoc signed by src/after-pack.mjs. Both run before this point, so nothing
+# may modify the .app from here on or the signature breaks.
 if [[ "$(uname)" == "Darwin" ]]; then
   APP_PATH="${SRC_DIR}/dist/mac-arm64/OpenWebUI.app"
   if [[ -d "${APP_PATH}" ]]; then
-    plutil -replace NSAllowsArbitraryLoadsInWebContent -bool true "${APP_PATH}/Contents/Info.plist"
+    echo "Signature: $(codesign -dv "${APP_PATH}" 2>&1 | grep -E '^(Identifier|Signature)=' | tr '\n' ' ')"
   fi
 fi
 

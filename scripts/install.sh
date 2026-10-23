@@ -36,8 +36,14 @@ if [[ -z "${APP_PATH}" ]]; then
   exit 1
 fi
 
-# Copy to /Applications
+# Replace any existing install. Removing first matters: `cp -R` onto an existing
+# directory would nest the new bundle inside the old one, and macOS Local
+# Network privacy keys its decision on the bundle ID, so a clean replacement
+# keeps the existing "Allow" setting.
 echo "Installing ${APP_PATH} to /Applications/OpenWebUI.app..."
+if [[ -d /Applications/OpenWebUI.app ]]; then
+  rm -rf /Applications/OpenWebUI.app
+fi
 cp -R "${APP_PATH}" /Applications/OpenWebUI.app
 
 echo "Installed to /Applications/OpenWebUI.app"
@@ -50,3 +56,7 @@ echo ""
 echo "If you see 'OpenWebUI is damaged' in System Preferences:"
 echo "  Right-click /Applications/OpenWebUI.app > Open"
 echo "  Click 'Open' in the dialog"
+echo ""
+echo "If OpenWebUI runs on another machine, allow the app under"
+echo "  System Settings > Privacy & Security > Local Network"
+echo "when macOS asks on first launch."

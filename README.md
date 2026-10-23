@@ -3,6 +3,8 @@
 A native desktop app for [OpenWebUI](https://github.com/open-webui/open-webui) — wraps your local
 OpenWebUI instance in a standalone macOS or Linux app with its own window, icon, and process.
 
+![Launching OpenWebUI Desktop from Spotlight](resources/demo.gif)
+
 ## Prerequisites
 
 - **OpenWebUI installed and running locally** — this app is just a wrapper; it does not install

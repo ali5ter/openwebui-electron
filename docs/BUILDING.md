@@ -26,15 +26,25 @@ privacy (macOS 15 and later) keys its allow/deny decision on that identifier, so
 this state can never be granted local network access, however the toggle in System Settings
 is set.
 
-`src/after-pack.mjs` therefore ad-hoc signs the whole bundle after packing, giving every
-executable a signature whose identifier is its own bundle ID. Verify a build with:
+`src/after-pack.mjs` therefore does two things after packing:
+
+1. Rewrites the launcher's Mach-O `LC_UUID`. Every app built on the same Electron release
+   ships the same prebuilt launcher and so the same UUID, and macOS uses that UUID to identify
+   the app for Local Network privacy. A shared UUID lets one app silently inherit another's
+   decision. The new UUID is derived from the app ID, so it is stable across rebuilds.
+2. Ad-hoc signs the whole bundle, giving every executable a signature whose identifier is its
+   own bundle ID.
+
+Verify a build with:
 
 ```bash
+dwarfdump --uuid src/dist/mac-arm64/OpenWebUI.app/Contents/MacOS/OpenWebUI
 codesign -dv src/dist/mac-arm64/OpenWebUI.app 2>&1 | grep Identifier
 codesign --verify --deep --strict src/dist/mac-arm64/OpenWebUI.app
 ```
 
-The first command must print `Identifier=com.openwebui.desktop`. Never modify the `.app`
+The UUID must not be Electron's stock value (it starts `4C4C44` for Electron builds), and the
+identifier must be `com.openwebui.desktop`. The hook's own tests run with `npm test` in `src/`. Never modify the `.app`
 after the build (for example with `plutil`); that breaks the signature. Info.plist additions
 belong in `extendInfo` in `src/package.json`.
 

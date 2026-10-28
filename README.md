@@ -15,7 +15,8 @@ OpenWebUI instance in a standalone macOS or Linux app with its own window, icon,
 
 ### From a pre-built release
 
-1. Download the latest `.dmg` (macOS) or `.AppImage` (Linux) from [Releases](https://github.com/ali5ter/openwebui-electron/releases)
+1. Download the latest `.dmg` (macOS) or `.AppImage` (Linux) from [Releases](https://github.com/ali5ter/openwebui-electron/releases).
+   macOS ships one DMG per architecture: `-arm64` for Apple silicon, `-x64` for Intel
 2. **macOS:** Drag `OpenWebUI.app` to `/Applications`
 3. **Linux:** `chmod +x OpenWebUI*.AppImage && ./OpenWebUI*.AppImage`
 
@@ -25,7 +26,7 @@ OpenWebUI instance in a standalone macOS or Linux app with its own window, icon,
 git clone https://github.com/ali5ter/openwebui-electron.git
 cd openwebui-electron
 
-# macOS (Apple Silicon)
+# macOS (builds both Apple silicon and Intel)
 ./scripts/build.sh --mac
 ./scripts/install.sh
 

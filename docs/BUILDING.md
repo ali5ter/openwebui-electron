@@ -3,12 +3,18 @@
 ## Build from source
 
 ```bash
-./scripts/build.sh              # Build for current platform
-./scripts/build.sh --mac        # macOS (ARM64)
+./scripts/build.sh              # Build for current platform and architecture
+./scripts/build.sh --mac        # macOS (both arm64 and x64)
+./scripts/build.sh --mac-arm64  # macOS (Apple silicon)
+./scripts/build.sh --mac-x64    # macOS (Intel)
 ./scripts/build.sh --linux      # Linux (x64)
 ```
 
-Output goes to `src/dist/`.
+Output goes to `src/dist/`: the Apple silicon bundle in `dist/mac-arm64/`, the Intel
+bundle in `dist/mac/`, and one DMG and zip per architecture named
+`OpenWebUI-<version>-arm64.*` and `OpenWebUI-<version>-x64.*`.
+
+`install.sh` picks the bundle matching the Mac it runs on.
 
 ## Install on macOS
 

@@ -24,8 +24,7 @@ jobs:
         run: npm install
 
       - name: Build DMG and zip
-        working-directory: src
-        run: npx electron-builder --mac --arm64
+        run: ./scripts/build.sh --mac
 
       - name: Upload DMG
         uses: softprops/action-gh-release@v2
@@ -36,7 +35,7 @@ jobs:
       - name: Upload zip
         uses: softprops/action-gh-release@v2
         with:
-          files: src/dist/OpenWebUI-*-mac.zip
+          files: src/dist/OpenWebUI-*.zip
           generate_release_notes: true
 
       - name: Publish to Homebrew tap
@@ -44,23 +43,29 @@ jobs:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          DMG="src/dist/OpenWebUI-${VERSION}-arm64.dmg"
-          if [[ ! -f "${DMG}" ]]; then
-            echo "error: ${DMG} not found. The tag v${VERSION} must match the version in src/package.json." >&2
-            ls src/dist/ >&2
-            exit 1
-          fi
-          SHA256=$(shasum -a 256 "${DMG}" | awk '{print $1}')
+          for arch in arm64 x64; do
+            DMG="src/dist/OpenWebUI-${VERSION}-${arch}.dmg"
+            if [[ ! -f "${DMG}" ]]; then
+              echo "error: ${DMG} not found. The tag v${VERSION} must match the version in src/package.json." >&2
+              ls src/dist/ >&2
+              exit 1
+            fi
+          done
+          SHA256_ARM=$(shasum -a 256 "src/dist/OpenWebUI-${VERSION}-arm64.dmg" | awk '{print $1}')
+          SHA256_INTEL=$(shasum -a 256 "src/dist/OpenWebUI-${VERSION}-x64.dmg" | awk '{print $1}')
 
           git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/ali5ter/homebrew-tap.git" /tmp/homebrew-tap
           mkdir -p /tmp/homebrew-tap/Casks
 
           cat > "/tmp/homebrew-tap/Casks/openwebui-electron.rb" <<EOF
           cask "openwebui-electron" do
-            version "${VERSION}"
-            sha256 "${SHA256}"
+            arch arm: "arm64", intel: "x64"
 
-            url "https://github.com/ali5ter/openwebui-electron/releases/download/v#{version}/OpenWebUI-#{version}-arm64.dmg"
+            version "${VERSION}"
+            sha256 arm:   "${SHA256_ARM}",
+                   intel: "${SHA256_INTEL}"
+
+            url "https://github.com/ali5ter/openwebui-electron/releases/download/v#{version}/OpenWebUI-#{version}-#{arch}.dmg"
             name "OpenWebUI"
             desc "Desktop app for local OpenWebUI instances"
             homepage "https://github.com/ali5ter/openwebui-electron"

@@ -28,11 +28,31 @@ if [[ ! -d "${DIST_DIR}" ]]; then
   exit 1
 fi
 
-# Find the .app bundle
-APP_PATH=$(find "${DIST_DIR}" -name "OpenWebUI.app" -type d 2>/dev/null | head -1)
+# Find the .app bundle. A build may produce one bundle per architecture
+# (dist/mac-arm64 and dist/mac), so prefer the one whose launcher is native to
+# this Mac and fall back to any bundle, which Rosetta can still run.
+HOST_ARCH="$(uname -m)"
+APP_PATH=""
+FALLBACK_PATH=""
+
+while IFS= read -r candidate; do
+  [[ -n "${candidate}" ]] || continue
+  [[ -n "${FALLBACK_PATH}" ]] || FALLBACK_PATH="${candidate}"
+  if lipo -archs "${candidate}/Contents/MacOS/OpenWebUI" 2>/dev/null |
+    grep -qw "${HOST_ARCH}"; then
+    APP_PATH="${candidate}"
+    break
+  fi
+done < <(find "${DIST_DIR}" -name "OpenWebUI.app" -type d 2>/dev/null)
+
+if [[ -z "${APP_PATH}" ]]; then
+  APP_PATH="${FALLBACK_PATH}"
+  [[ -z "${APP_PATH}" ]] || echo "warning: no ${HOST_ARCH} build found, installing ${APP_PATH}" >&2
+fi
 
 if [[ -z "${APP_PATH}" ]]; then
   echo "error: no OpenWebUI.app found in ${DIST_DIR}" >&2
+  echo "Run ./scripts/build.sh first" >&2
   exit 1
 fi
 
